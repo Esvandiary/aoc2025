@@ -16,6 +16,7 @@ int main(int argc, char** argv)
     uint64_t answer1 = 0, answer2 = 0;
 
     int64_t curValue = 4611686018427387900LL + 50;
+    int64_t curValueMod100 = 50;
 
     int idx = 0;
     while (idx < fileSize - 2)
@@ -28,20 +29,18 @@ int main(int argc, char** argv)
         ++idx; // '\n'
 
         const int64_t diff = mul * num1;
-        const int64_t provValue = curValue + diff;
 
-        const int64_t oldValue = curValue % 100;
-        int a2count = (mul > 0)
-            ? (diff + oldValue) / 100
-            : (-diff + (oldValue ? 100 - oldValue : 0)) / 100;
+        answer2 += (mul > 0)
+            ? (diff + curValueMod100) / 100
+            : (-diff + (curValueMod100 ? 100 - curValueMod100 : 0)) / 100;
 
-        curValue = provValue;
+        curValue += diff;
 
         // DEBUGLOG("mul = %d, num1 = %d, oldValue = %" PRId64 ", curValue = %" PRId64 ", a2count = %d\n", mul, num1, oldValue, curValue % 100, a2count);
 
-        if ((curValue % 100) == 0)
+        curValueMod100 = curValue % 100;
+        if (curValueMod100 == 0)
             ++answer1;
-        answer2 += a2count;
     }
 
     print_uint64(answer1);
