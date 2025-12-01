@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 
         answer2 += (mul > 0)
             ? (diff + curValueMod100) / 100
-            : (-diff + (curValueMod100 ? 100 - curValueMod100 : 0)) / 100;
+            : (((100 - curValueMod100) % 100) - diff) / 100;
 
         curValue += diff;
 
