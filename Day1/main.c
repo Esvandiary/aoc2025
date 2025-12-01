@@ -1,5 +1,6 @@
 // #define ENABLE_DEBUGLOG
 #include "../common/mmap.h"
+#include "../common/basicfile.h"
 #include "../common/print.h"
 #include "../common/view.h"
 #include "../common/intparse.h"
@@ -22,7 +23,7 @@ int main(int argc, char** argv)
     while (idx < fileSize - 2)
     {
         // L --> -1, R --> 1
-        int mul = ((file.data[idx++] & 0b100) >> 1) - 1;
+        const int mul = ((file.data[idx++] & 0b100) >> 1) - 1;
 
         int num1 = 0;
         PARSEINT(num1, file.data, idx);
