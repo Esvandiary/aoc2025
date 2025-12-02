@@ -10,10 +10,6 @@ int main(int argc, char** argv)
     mmap_file file = mmap_file_open_ro("input.txt");
     const int fileSize = (int)(file.size);
 
-    //
-    // content
-    //
-
     uint64_t answer1 = 0, answer2 = 0;
 
     int idx = 0;
@@ -36,10 +32,35 @@ int main(int argc, char** argv)
         int testlen = num2len;
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
-            if ((testlen % 2) == 0 && memcmp(test + 32 - testlen, test + 32 - testlen / 2, testlen / 2) == 0)
+            for (int ilen = testlen / 2; ilen >= 1; --ilen)
             {
-                answer1 += ntest;
-                DEBUGLOG("invalid: %" PRIu64 " (%d)\n", ntest, testlen);
+                if ((testlen % ilen) == 0)
+                {
+                    bool miss = false;
+                    for (int itest = 0; itest < testlen / ilen; ++itest)
+                    {
+                        if (memcmp(test + 32 - testlen, test + 32 - testlen + ilen*itest, ilen) != 0)
+                        {
+                            miss = true;
+                            break;
+                        }
+                    }
+
+                    if (!miss)
+                    {
+                        answer2 += ntest;
+                        if (testlen % 2 == 0 && ilen == testlen / 2)
+                        {
+                            answer1 += ntest;
+                            DEBUGLOG("invalid (1,2): %" PRIu64 " (%d)\n", ntest, ilen);
+                        }
+                        else
+                        {
+                            DEBUGLOG("invalid (2): %" PRIu64 " (%d)\n", ntest, ilen);
+                        }
+                        break;
+                    }
+                }
             }
 
             // you are now decrementing manually
