@@ -34,10 +34,21 @@ typedef unsigned char chartype;
 
 #define RESTRICT __restrict
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#define DECLTYPE(x) decltype(x)
+#elif defined(__GNUC__) || defined(__clang__)
+#define DECLTYPE(x) __typeof(x)
+#else
+#warning Unknown platform, no decltype
+#define DECLTYPE(x)
+#endif
+
 #if defined(ENABLE_DEBUGLOG)
 #define DEBUGLOG(...) fprintf(stderr, __VA_ARGS__)
+#define DEBUGDO(x) x
 #else
 #define DEBUGLOG(...) (void)0
+#define DEBUGDO(x) (void)0
 #endif
 
 #if defined(ENABLE_CHECKS)
