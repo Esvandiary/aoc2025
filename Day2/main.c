@@ -5,17 +5,17 @@
 #include "../common/view.h"
 #include "../common/intparse.h"
 
-// #define USE_NUMBERS
-
 #define ARRLEN 32
 
-static const uint64_t mods[] = {
-    1ULL, 10ULL, 100ULL, 1000ULL,
-    10000ULL, 100000ULL, 1000000ULL, 10000000ULL,
-    100000000ULL, 1000000000ULL, 10000000000ULL, 100000000000ULL,
-    1000000000000ULL, 10000000000000ULL, 100000000000000ULL, 1000000000000000ULL
-};
-
+static inline FORCEINLINE int min_possible(const char* arr, int testlen)
+{
+    for (int i = 1; i < testlen; ++i)
+    {
+        if (arr[0] == arr[i])
+            return i;
+    }
+    return testlen;
+}
 
 int main(int argc, char** argv)
 {
@@ -39,52 +39,13 @@ int main(int argc, char** argv)
         int num2len = (idx - num2start);
         ++idx; // ','
 
-#ifdef USE_NUMBERS
-        int testlen = num2len;
-        for (uint64_t ntest = num2; ntest >= num1; --ntest)
-        {
-            if (ntest / mods[testlen-1] == 0)
-                --testlen;
-
-            DEBUGLOG("===== %" PRIu64 " (%d) =====\n", ntest, testlen);
-            for (int ilen = testlen / 2; ilen >= 1; --ilen)
-            {
-                if ((testlen % ilen) == 0)
-                {
-                    uint64_t ntestcur = ntest / mods[ilen];
-                    const int iend = testlen / ilen;
-                    for (int itest = 1; itest < iend; ++itest, ntestcur /= mods[ilen])
-                    {
-                        const uint64_t ntest1 = ntest % mods[ilen];
-                        const uint64_t ntest2 = ntestcur % mods[ilen];
-                        // DEBUGLOG("testing: %" PRIu64 " vs %" PRIu64 " (%d, %d, %" PRIu64 ", %" PRIu64 ")\n", ntest1, ntest2, ilen, itest, mods[itest], mods[ilen]);
-                        if (ntest1 != ntest2)
-                            goto nextlen;
-                    }
-
-                    answer2 += ntest;
-                    if (ilen * 2 == testlen)
-                    {
-                        answer1 += ntest;
-                        DEBUGLOG("invalid (1,2): %" PRIu64 " (%d)\n", ntest, ilen);
-                    }
-                    else
-                    {
-                        DEBUGLOG("invalid (2): %" PRIu64 " (%d)\n", ntest, ilen);
-                    }
-                    break;
-                }
-nextlen:
-                (void)0;
-            }
-        }
-#else
         char test[ARRLEN];
         memcpy(test + ARRLEN - num2len, file.data + num2start, num2len);
         int testlen = num2len;
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
-            for (int ilen = testlen / 2; ilen >= 1; --ilen)
+            const int imin = min_possible(test + ARRLEN - testlen, testlen);
+            for (int ilen = testlen / 2; ilen >= imin; --ilen)
             {
                 if ((testlen % ilen) == 0)
                 {
@@ -132,7 +93,6 @@ nextlen:
                 }
             }
         }
-#endif
     }
 
     print_uint64(answer1);
