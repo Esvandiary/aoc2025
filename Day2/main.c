@@ -44,10 +44,11 @@ int main(int argc, char** argv)
         char test[ARRLEN];
         memcpy(test + ARRLEN - num2len, file.data + num2start, num2len);
         int testlen = num2len;
-        int imin = min_possible(test + ARRLEN - testlen, testlen);
+        int testlendiv2 = testlen >> 1;
+        int imin = min_possible(test + ARRLEN - testlen, testlendiv2 + 1);
 
         div_t ilendiv[ARRLEN];
-        for (int i = 1; i <= testlen / 2; ++i)
+        for (int i = 1; i <= testlendiv2; ++i)
             ilendiv[i] = div(testlen, i);
 
         int ilenkills[ARRLEN] = {0};
@@ -55,7 +56,7 @@ int main(int argc, char** argv)
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
             //DEBUGLOG("===== %" PRIu64 " =====\n", ntest);
-            for (int ilen = testlen / 2; ilen >= imin; --ilen)
+            for (int ilen = testlendiv2; ilen >= imin; --ilen)
             {
                 if (ilenkills[ilen] == 0 && ilendiv[ilen].rem == 0)
                 {
@@ -99,12 +100,16 @@ int main(int argc, char** argv)
                     if (c == ARRLEN - testlen && test[c] == '1')
                     {
                         --testlen;
-                        for (int i = 1; i <= testlen / 2; ++i)
+                        testlendiv2 = testlen >> 1;
+                        for (int i = 1; i <= testlendiv2; ++i)
                             ilendiv[i] = div(testlen, i);
                         break;
                     }
 
-                    ilenkills[c] = 0;
+                    for (int i = 0; i <= testlendiv2; ++i)
+                        if (ilenkills[i] == c)
+                            ilenkills[i] = 0;
+
                     if (--test[c] < '0')
                         test[c] = '9';
                     else
@@ -113,7 +118,7 @@ int main(int argc, char** argv)
                 minchange = (c - (ARRLEN - testlen));
             }
             if (minchange <= imin)
-                imin = min_possible(test + ARRLEN - testlen, testlen);
+                imin = min_possible(test + ARRLEN - testlen, testlendiv2 + 1);
         }
     }
 
