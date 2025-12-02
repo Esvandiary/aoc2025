@@ -5,7 +5,7 @@
 #include "../common/view.h"
 #include "../common/intparse.h"
 
-#define USE_NUMBERS
+// #define USE_NUMBERS
 
 #define ARRLEN 32
 
