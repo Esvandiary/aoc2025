@@ -50,19 +50,27 @@ int main(int argc, char** argv)
         for (int i = 1; i <= testlen / 2; ++i)
             ilendiv[i] = div(testlen, i);
 
+        int ilenkills[ARRLEN] = {0};
+
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
             //DEBUGLOG("===== %" PRIu64 " =====\n", ntest);
             for (int ilen = testlen / 2; ilen >= imin; --ilen)
             {
-                if (ilendiv[ilen].rem == 0)
+                if (ilenkills[ilen] == 0 && ilendiv[ilen].rem == 0)
                 {
                     DEBUGDO(++ilens);
                     const int iend = ilendiv[ilen].quot;
                     for (int itest = 1; itest < iend; ++itest)
                     {
-                        if (memcmp(test + ARRLEN - testlen, test + ARRLEN - testlen + ilen*itest, ilen) != 0)
-                            goto nextlen;
+                        for (int i = 0; i < ilen; ++i)
+                        {
+                            if (test[ARRLEN - testlen + i] != test[ARRLEN - testlen + ilen*itest + i])
+                            {
+                                ilenkills[ARRLEN - testlen + ilen] = ARRLEN - testlen + ilen*itest + i;
+                                goto nextlen;
+                            }
+                        }
                     }
 
                     answer2 += ntest;
@@ -95,14 +103,12 @@ int main(int argc, char** argv)
                             ilendiv[i] = div(testlen, i);
                         break;
                     }
-                    else if (--test[c] < '0')
-                    {
+
+                    ilenkills[c] = 0;
+                    if (--test[c] < '0')
                         test[c] = '9';
-                    }
                     else
-                    {
                         break;
-                    }
                 }
                 minchange = (c - (ARRLEN - testlen));
             }
