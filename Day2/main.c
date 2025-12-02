@@ -42,9 +42,9 @@ int main(int argc, char** argv)
         char test[ARRLEN];
         memcpy(test + ARRLEN - num2len, file.data + num2start, num2len);
         int testlen = num2len;
+        int imin = min_possible(test + ARRLEN - testlen, testlen);
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
-            const int imin = min_possible(test + ARRLEN - testlen, testlen);
             for (int ilen = testlen / 2; ilen >= imin; --ilen)
             {
                 if ((testlen % ilen) == 0)
@@ -73,9 +73,12 @@ int main(int argc, char** argv)
             }
 
             // you are now decrementing manually
+
+            int minchange = testlen;
             if (--test[ARRLEN-1] < '0')
             {
-                for (int c = ARRLEN-1; c >= ARRLEN - testlen; --c)
+                int c;
+                for (c = ARRLEN-1; c >= ARRLEN - testlen; --c)
                 {
                     if (c == ARRLEN - testlen && test[c] == '1')
                     {
@@ -91,7 +94,10 @@ int main(int argc, char** argv)
                         break;
                     }
                 }
+                minchange = (c - (ARRLEN - testlen));
             }
+            if (minchange <= imin)
+                imin = min_possible(test + ARRLEN - testlen, testlen);
         }
     }
 
