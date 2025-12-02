@@ -24,6 +24,8 @@ int main(int argc, char** argv)
 
     uint64_t answer1 = 0, answer2 = 0;
 
+    uint64_t ilens = 0;
+
     int idx = 0;
     while (idx < fileSize - 2)
     {
@@ -43,12 +45,15 @@ int main(int argc, char** argv)
         memcpy(test + ARRLEN - num2len, file.data + num2start, num2len);
         int testlen = num2len;
         int imin = min_possible(test + ARRLEN - testlen, testlen);
+
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
+            //DEBUGLOG("===== %" PRIu64 " =====\n", ntest);
             for (int ilen = testlen / 2; ilen >= imin; --ilen)
             {
                 if ((testlen % ilen) == 0)
                 {
+                    DEBUGDO(++ilens);
                     const int iend = testlen / ilen;
                     for (int itest = 1; itest < iend; ++itest)
                     {
@@ -102,6 +107,8 @@ int main(int argc, char** argv)
 
     print_uint64(answer1);
     print_uint64(answer2);
+
+    DEBUGLOG("checked %" PRIu64 " ilens\n", ilens);
 
     return 0;
 }
