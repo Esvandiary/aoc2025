@@ -7,7 +7,8 @@
 
 int main(int argc, char** argv)
 {
-    mmap_file file = mmap_file_open_ro("input.txt");
+    // mmap_file file = mmap_file_open_ro("input.txt");
+    buffer file = basic_file_read("input.txt");
     const int fileSize = (int)(file.size);
 
     //
@@ -40,8 +41,7 @@ int main(int argc, char** argv)
         // DEBUGLOG("mul = %d, num1 = %d, oldValue = %" PRId64 ", curValue = %" PRId64 ", a2count = %d\n", mul, num1, oldValue, curValue % 100, a2count);
 
         curValueMod100 = curValue % 100;
-        if (curValueMod100 == 0)
-            ++answer1;
+        answer1 += (curValueMod100 == 0);
     }
 
     print_uint64(answer1);
