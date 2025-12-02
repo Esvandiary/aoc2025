@@ -5,7 +5,7 @@
 #include "../common/view.h"
 #include "../common/intparse.h"
 
-#define ARRLEN 32
+#define ARRLEN 16
 
 static inline FORCEINLINE int min_possible(const char* arr, int testlen)
 {
@@ -46,15 +46,19 @@ int main(int argc, char** argv)
         int testlen = num2len;
         int imin = min_possible(test + ARRLEN - testlen, testlen);
 
+        div_t ilendiv[ARRLEN];
+        for (int i = 1; i <= testlen / 2; ++i)
+            ilendiv[i] = div(testlen, i);
+
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
             //DEBUGLOG("===== %" PRIu64 " =====\n", ntest);
             for (int ilen = testlen / 2; ilen >= imin; --ilen)
             {
-                if ((testlen % ilen) == 0)
+                if (ilendiv[ilen].rem == 0)
                 {
                     DEBUGDO(++ilens);
-                    const int iend = testlen / ilen;
+                    const int iend = ilendiv[ilen].quot;
                     for (int itest = 1; itest < iend; ++itest)
                     {
                         if (memcmp(test + ARRLEN - testlen, test + ARRLEN - testlen + ilen*itest, ilen) != 0)
@@ -87,6 +91,8 @@ int main(int argc, char** argv)
                     if (c == ARRLEN - testlen && test[c] == '1')
                     {
                         --testlen;
+                        for (int i = 1; i <= testlen / 2; ++i)
+                            ilendiv[i] = div(testlen, i);
                         break;
                     }
                     else if (--test[c] < '0')
