@@ -50,7 +50,7 @@ int main(int argc, char** argv)
                 if ((testlen % ilen) == 0)
                 {
                     const int iend = testlen / ilen;
-                    for (int itest = 0; itest < iend; ++itest)
+                    for (int itest = 1; itest < iend; ++itest)
                     {
                         if (memcmp(test + ARRLEN - testlen, test + ARRLEN - testlen + ilen*itest, ilen) != 0)
                             goto nextlen;
@@ -73,7 +73,6 @@ int main(int argc, char** argv)
             }
 
             // you are now decrementing manually
-
             int minchange = testlen;
             if (--test[ARRLEN-1] < '0')
             {
