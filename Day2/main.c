@@ -5,6 +5,8 @@
 #include "../common/view.h"
 #include "../common/intparse.h"
 
+#define ARRLEN 32
+
 int main(int argc, char** argv)
 {
     mmap_file file = mmap_file_open_ro("input.txt");
@@ -27,8 +29,8 @@ int main(int argc, char** argv)
         int num2len = (idx - num2start);
         ++idx; // ','
 
-        char test[33] = {0};
-        memcpy(test + 32 - num2len, file.data + num2start, num2len);
+        char test[ARRLEN];
+        memcpy(test + ARRLEN - num2len, file.data + num2start, num2len);
         int testlen = num2len;
         for (uint64_t ntest = num2; ntest >= num1; --ntest)
         {
@@ -36,49 +38,47 @@ int main(int argc, char** argv)
             {
                 if ((testlen % ilen) == 0)
                 {
-                    bool miss = false;
-                    for (int itest = 0; itest < testlen / ilen; ++itest)
+                    const int iend = testlen / ilen;
+                    for (int itest = 0; itest < iend; ++itest)
                     {
-                        if (memcmp(test + 32 - testlen, test + 32 - testlen + ilen*itest, ilen) != 0)
-                        {
-                            miss = true;
-                            break;
-                        }
+                        if (memcmp(test + ARRLEN - testlen, test + ARRLEN - testlen + ilen*itest, ilen) != 0)
+                            goto nextlen;
                     }
 
-                    if (!miss)
+                    answer2 += ntest;
+                    if (ilen * 2 == testlen)
                     {
-                        answer2 += ntest;
-                        if (testlen % 2 == 0 && ilen == testlen / 2)
-                        {
-                            answer1 += ntest;
-                            DEBUGLOG("invalid (1,2): %" PRIu64 " (%d)\n", ntest, ilen);
-                        }
-                        else
-                        {
-                            DEBUGLOG("invalid (2): %" PRIu64 " (%d)\n", ntest, ilen);
-                        }
-                        break;
+                        answer1 += ntest;
+                        DEBUGLOG("invalid (1,2): %" PRIu64 " (%d)\n", ntest, ilen);
                     }
+                    else
+                    {
+                        DEBUGLOG("invalid (2): %" PRIu64 " (%d)\n", ntest, ilen);
+                    }
+                    break;
+                nextlen:
+                    (void)0;
                 }
             }
 
             // you are now decrementing manually
-            const bool dropnext = (--test[31] < '0');
-            for (int c = 31; dropnext && c >= 32 - testlen; --c)
+            if (--test[ARRLEN-1] < '0')
             {
-                if (c == 32 - testlen && test[c] == '1')
+                for (int c = ARRLEN-1; c >= ARRLEN - testlen; --c)
                 {
-                    --testlen;
-                    break;
-                }
-                else if (--test[c] < '0')
-                {
-                    test[c] = '9';
-                }
-                else
-                {
-                    break;
+                    if (c == ARRLEN - testlen && test[c] == '1')
+                    {
+                        --testlen;
+                        break;
+                    }
+                    else if (--test[c] < '0')
+                    {
+                        test[c] = '9';
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }
