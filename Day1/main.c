@@ -7,8 +7,8 @@
 
 int main(int argc, char** argv)
 {
-    // mmap_file file = mmap_file_open_ro("input.txt");
-    buffer file = basic_file_read("input.txt");
+    mmap_file file = mmap_file_open_ro("input.txt");
+    // buffer file = basic_file_read("input.txt");
     const int fileSize = (int)(file.size);
 
     //
