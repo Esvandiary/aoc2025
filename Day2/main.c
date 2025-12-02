@@ -42,14 +42,15 @@ int main(int argc, char** argv)
         ++idx; // ','
 
         char test[ARRLEN];
-        memcpy(test + ARRLEN - num2len, file.data + num2start, num2len);
+        char* const tend = test + ARRLEN;
+        memcpy(tend - num2len, file.data + num2start, num2len);
         int testlen = num2len;
         int testlendiv2 = testlen >> 1;
-        int imin = min_possible(test + ARRLEN - testlen, testlendiv2 + 1);
+        int imin = min_possible(tend - testlen, testlendiv2 + 1);
 
-        div_t ilendiv[ARRLEN];
+        int ilenmod[ARRLEN];
         for (int i = 1; i <= testlendiv2; ++i)
-            ilendiv[i] = div(testlen, i);
+            ilenmod[i] = testlen % i;
 
         int ilenkills[ARRLEN] = {0};
 
@@ -58,19 +59,19 @@ int main(int argc, char** argv)
             //DEBUGLOG("===== %" PRIu64 " =====\n", ntest);
             for (int ilen = testlendiv2; ilen >= imin; --ilen)
             {
-                if (ilenkills[ilen] == 0 && ilendiv[ilen].rem == 0)
+                if (ilenkills[ilen] == 0 && ilenmod[ilen] == 0)
                 {
                     DEBUGDO(++ilens);
-                    const int iend = ilendiv[ilen].quot;
-                    for (int itest = 1; itest < iend; ++itest)
+                    const char* const t1 = tend - testlen;
+                    const char* t2 = t1 + ilen;
+
+                    for (int i = 0; t2 < tend; ++i, ++t2)
                     {
-                        for (int i = 0; i < ilen; ++i)
+                        if (i == ilen) i = 0;
+                        if (*(t1 + i) != *t2)
                         {
-                            if (test[ARRLEN - testlen + i] != test[ARRLEN - testlen + ilen*itest + i])
-                            {
-                                ilenkills[ilen] = ARRLEN - testlen + ilen*itest + i;
-                                goto nextlen;
-                            }
+                            ilenkills[ilen] = t2 - test;
+                            goto nextlen;
                         }
                     }
 
@@ -102,7 +103,7 @@ int main(int argc, char** argv)
                         --testlen;
                         testlendiv2 = testlen >> 1;
                         for (int i = 1; i <= testlendiv2; ++i)
-                            ilendiv[i] = div(testlen, i);
+                            ilenmod[i] = testlen % i;
                         break;
                     }
 
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
                 if (ilenkills[i] >= minchange)
                     ilenkills[i] = 0;
             if (minchange - (ARRLEN - testlen) <= imin)
-                imin = min_possible(test + ARRLEN - testlen, testlendiv2 + 1);
+                imin = min_possible(tend - testlen, testlendiv2 + 1);
         }
     }
 
