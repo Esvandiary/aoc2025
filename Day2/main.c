@@ -68,7 +68,7 @@ int main(int argc, char** argv)
                         {
                             if (test[ARRLEN - testlen + i] != test[ARRLEN - testlen + ilen*itest + i])
                             {
-                                ilenkills[ARRLEN - testlen + ilen] = ARRLEN - testlen + ilen*itest + i;
+                                ilenkills[ilen] = ARRLEN - testlen + ilen*itest + i;
                                 goto nextlen;
                             }
                         }
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
             }
 
             // you are now decrementing manually
-            int minchange = testlen;
+            int minchange = ARRLEN-1;
             if (--test[ARRLEN-1] < '0')
             {
                 int c;
@@ -106,18 +106,17 @@ int main(int argc, char** argv)
                         break;
                     }
 
-                    for (int i = 0; i <= testlendiv2; ++i)
-                        if (ilenkills[i] == c)
-                            ilenkills[i] = 0;
-
                     if (--test[c] < '0')
                         test[c] = '9';
                     else
                         break;
                 }
-                minchange = (c - (ARRLEN - testlen));
+                minchange = c;
             }
-            if (minchange <= imin)
+            for (int i = 1; i <= testlendiv2; ++i)
+                if (ilenkills[i] >= minchange)
+                    ilenkills[i] = 0;
+            if (minchange - (ARRLEN - testlen) <= imin)
                 imin = min_possible(test + ARRLEN - testlen, testlendiv2 + 1);
         }
     }
