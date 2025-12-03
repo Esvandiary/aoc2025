@@ -21,43 +21,48 @@ int main(int argc, char** argv)
     int idx = 0;
     while (idx < fileSize - 2)
     {
-        int found = 0;
-        chartype nums1[COUNT1+2] = {0xFF};
-        chartype nums2[COUNT2+2] = {0xFF};
+        chartype nums2[COUNT2+1];
+        memcpy(nums2, file.data + idx, sizeof(chartype) * COUNT2);
+        nums2[COUNT2] = 0;
+        idx += COUNT2;
+
         while (isdigit(file.data[idx]))
         {
-            const char c = file.data[idx++];
-        p1:
-            for (int i = 1; i <= COUNT1; ++i)
-            {
-                if (nums1[i] > nums1[i-1])
-                {
-                    memmove(nums1 + i - 1, nums1 + i, COUNT1 + 1 - i);
-                    nums1[COUNT1] = c;
-                    goto p2;
-                }
-            }
-            if (c > nums1[COUNT1])
-                nums1[COUNT1] = c;
-            
-        p2:
-            for (int i = 1; i <= COUNT2; ++i)
+            const chartype c = file.data[idx++];
+
+            for (int i = 1; i < COUNT2; ++i)
             {
                 if (nums2[i] > nums2[i-1])
                 {
-                    memmove(nums2 + i - 1, nums2 + i, COUNT2 + 1 - i);
-                    nums2[COUNT2] = c;
-                    goto nextnum;
+                    memmove(nums2 + i - 1, nums2 + i, sizeof(chartype) * (COUNT2 - i));
+                    goto setnum;
                 }
             }
-            if (c > nums2[COUNT2])
-                nums2[COUNT2] = c;
-        nextnum:
-            (void)0;
+
+            if (c > nums2[COUNT2-1])
+            {
+            setnum:
+                nums2[COUNT2-1] = c;
+            }
         }
         ++idx; // '\n'
+
+        chartype nums1[COUNT1+1] = { nums2[0], nums2[1] };
+        for (int i2 = 2; i2 < COUNT2; ++i2)
+        {
+            const chartype c = nums2[i2];
+            if (nums1[1] > nums1[0])
+            {
+                nums1[0] = nums1[1];
+                nums1[1] = c;
+            }
+            else if (c > nums1[1])
+            {
+                nums1[1] = c;
+            }
+        }
         
-        int tidx1 = 1, tidx2 = 1;
+        int tidx1 = 0, tidx2 = 0;
         uint64_t num1 = 0, num2 = 0;
         PARSEINT(num1, nums1, tidx1);
         PARSEINT(num2, nums2, tidx2);
