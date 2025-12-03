@@ -21,57 +21,65 @@ int main(int argc, char** argv)
     int idx = 0;
     while (idx < fileSize - 2)
     {
-        chartype nums2[COUNT2+1];
-        memcpy(nums2, file.data + idx, sizeof(chartype) * COUNT2);
-        nums2[COUNT2] = 0;
-        idx += COUNT2;
+        const int start = idx;
+        int p2start = start;
 
-        int sortedidx = 1;
+        uint64_t num1 = 0, num2 = 0;
 
+        chartype p1n0 = 0, p1n1 = 0;
         while (isdigit(file.data[idx]))
         {
-            const chartype c = file.data[idx++];
-
-            for (int i = sortedidx; i < COUNT2; ++i)
+            const chartype c = file.data[idx];
+            if (p1n1 > p1n0)
             {
-                if (nums2[i] > nums2[i-1])
+                p1n0 = p1n1;
+                p1n1 = c;
+            }
+            else if (c > p1n1)
+            {
+                p1n1 = c;
+            }
+
+            num1 = (p1n0 & 0xF) * 10 + (p1n1 & 0xF);
+
+            ++idx;
+        }
+        
+        int end = idx;
+
+
+
+        for (int nidx = 0; nidx < COUNT2; ++nidx)
+        {
+            chartype best = 0;
+            int bestpos = -1;
+            for (int i = end - (COUNT2 - nidx); i >= p2start; --i)
+            {
+                const chartype c = file.data[i];
+                if (c >= best)
                 {
-                    memmove(nums2 + i - 1, nums2 + i, sizeof(chartype) * (COUNT2 - i));
-                    sortedidx = MAX(1, i-1);
-                    goto setnum;
+                    best = c;
+                    bestpos = i;
                 }
             }
 
-            if (c > nums2[COUNT2-1])
+            if (best)
             {
-            setnum:
-                nums2[COUNT2-1] = c;
+                num2 = num2 * 10 + (best & 0xF);
+                p2start = bestpos + 1;
+                DEBUGLOG("nidx %d --> %c @ %d\n", nidx, best, bestpos - ostart);
+            }
+            else
+            {
+                break;
             }
         }
-        ++idx; // '\n'
 
-        chartype nums1[COUNT1+1] = { nums2[0], nums2[1] };
-        for (int i2 = 2; i2 < COUNT2; ++i2)
-        {
-            const chartype c = nums2[i2];
-            if (nums1[1] > nums1[0])
-            {
-                nums1[0] = nums1[1];
-                nums1[1] = c;
-            }
-            else if (c > nums1[1])
-            {
-                nums1[1] = c;
-            }
-        }
-        
-        int tidx1 = 0, tidx2 = 0;
-        uint64_t num1 = 0, num2 = 0;
-        PARSEINT(num1, nums1, tidx1);
-        PARSEINT(num2, nums2, tidx2);
         DEBUGLOG("line: P1 %" PRIu64 ", P2 %" PRIu64 "\n", num1, num2);
         answer1 += num1;
         answer2 += num2;
+
+        ++idx; // '\n'
     }
 
     print_uint64(answer1);
