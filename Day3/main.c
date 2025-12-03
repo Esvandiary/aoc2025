@@ -22,7 +22,6 @@ int main(int argc, char** argv)
     while (idx < fileSize - 2)
     {
         const int start = idx;
-        int p2start = start;
 
         chartype p1n0 = 0, p1n1 = 0;
         while (isdigit(file.data[idx]))
@@ -44,30 +43,25 @@ int main(int argc, char** argv)
         uint64_t num1 = (p1n0 & 0xF) * 10 + (p1n1 & 0xF);
         uint64_t num2 = 0;
 
-        for (int nidx = 0; nidx < COUNT2; ++nidx)
+        int p2start = start;
+        int endidx = idx - COUNT2;
+        for (int nidx = 0; nidx < COUNT2; ++nidx, ++endidx)
         {
             chartype best = 0;
             int bestpos;
-            for (int i = idx - (COUNT2 - nidx); i >= p2start; --i)
+            for (int i = p2start; i <= endidx; ++i)
             {
                 const chartype c = file.data[i];
-                if (c >= best)
+                if (c > best)
                 {
                     best = c;
                     bestpos = i;
                 }
             }
 
-            if (best)
-            {
-                num2 = num2 * 10 + (best & 0xF);
-                p2start = bestpos + 1;
-                DEBUGLOG("nidx %d --> %c @ %d\n", nidx, best, bestpos - ostart);
-            }
-            else
-            {
-                break;
-            }
+            num2 = num2 * 10 + (best & 0xF);
+            p2start = bestpos + 1;
+            DEBUGLOG("nidx %d --> %c @ %d\n", nidx, best, bestpos - start);
         }
 
         DEBUGLOG("line: P1 %" PRIu64 ", P2 %" PRIu64 "\n", num1, num2);
