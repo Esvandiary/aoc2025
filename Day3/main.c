@@ -24,8 +24,6 @@ int main(int argc, char** argv)
         const int start = idx;
         int p2start = start;
 
-        uint64_t num1 = 0, num2 = 0;
-
         chartype p1n0 = 0, p1n1 = 0;
         while (isdigit(file.data[idx]))
         {
@@ -40,20 +38,17 @@ int main(int argc, char** argv)
                 p1n1 = c;
             }
 
-            num1 = (p1n0 & 0xF) * 10 + (p1n1 & 0xF);
-
             ++idx;
         }
-        
-        int end = idx;
 
-
+        uint64_t num1 = (p1n0 & 0xF) * 10 + (p1n1 & 0xF);
+        uint64_t num2 = 0;
 
         for (int nidx = 0; nidx < COUNT2; ++nidx)
         {
             chartype best = 0;
-            int bestpos = -1;
-            for (int i = end - (COUNT2 - nidx); i >= p2start; --i)
+            int bestpos;
+            for (int i = idx - (COUNT2 - nidx); i >= p2start; --i)
             {
                 const chartype c = file.data[i];
                 if (c >= best)
