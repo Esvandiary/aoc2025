@@ -43,6 +43,16 @@ typedef unsigned char chartype;
 #define DECLTYPE(x)
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define MEMCPY(dst, src, sz) __builtin_memcpy((dst), (src), (sz))
+#define MEMMOVE(dst, src, sz) __builtin_memmove((dst), (src), (sz))
+#define MEMSET(dst, c, sz) __builtin_memset((dst), (c), (sz))
+#else
+#define MEMCPY(dst, src, sz) memcpy((dst), (src), (sz))
+#define MEMMOVE(dst, src, sz) memmove((dst), (src), (sz))
+#define MEMSET(dst, c, sz) memset((dst), (c), (sz))
+#endif
+
 #if defined(ENABLE_DEBUGLOG)
 #define DEBUGLOG(...) fprintf(stderr, __VA_ARGS__)
 #define DEBUGDO(x) x
