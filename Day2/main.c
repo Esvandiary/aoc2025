@@ -24,16 +24,14 @@ int main(int argc, char** argv)
 
     uint64_t answer1 = 0, answer2 = 0;
 
-    uint64_t ilens = 0;
+    DEBUGDO(uint64_t ilens = 0);
 
     int idx = 0;
     while (idx < fileSize - 2)
     {
         uint64_t num1 = 0, num2 = 0;
 
-        int num1start = idx;
         PARSEINT(num1, file.data, idx);
-        int num1len = (idx - num1start);
         ++idx; // '-'
 
         int num2start = idx;
