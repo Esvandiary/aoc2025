@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     while (idx < fileSize - 2)
     {
         chartype nums2[COUNT2+1];
-        MEMCPY(nums2, file.data + idx, sizeof(chartype) * COUNT2);
+        memcpy(nums2, file.data + idx, sizeof(chartype) * COUNT2);
         nums2[COUNT2] = 0;
         idx += COUNT2;
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
             {
                 if (nums2[i] > nums2[i-1])
                 {
-                    MEMMOVE(nums2 + i - 1, nums2 + i, sizeof(chartype) * (COUNT2 - i));
+                    memmove(nums2 + i - 1, nums2 + i, sizeof(chartype) * (COUNT2 - i));
                     sortedidx = MAX(1, i-1);
                     goto setnum;
                 }
