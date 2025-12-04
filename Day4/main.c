@@ -30,11 +30,15 @@ int main(int argc, char** argv)
     while (data[idx++] != '\n');
     const int linewidth = idx;
 
-    int16_t removeidx[4096];
-    uint64_t toremove;
+    DEBUGLOG("linewidth = %d\n", linewidth);
+
+    int16_t removeidx[2][8192];
+    int ri = 0;
+    uint64_t toremove = 0;
+    uint64_t removed = 0;
 
     uint8_t* nc = nearcounts;
-    for (const chartype* cd = data; cd != end; ++cd, ++nc)
+    for (chartype* cd = data; cd != end; ++cd, ++nc)
     {
         if (*cd != '@')
             continue;
@@ -53,30 +57,77 @@ int main(int argc, char** argv)
         near += cd[linewidth+1] >> 6;
 
         *nc = near;
+        if (near < 4)
+            removeidx[0][toremove++] = cd - data;
     }
+
+    for (size_t i = 0; i < toremove; ++i)
+    {
+        data[removeidx[0][i]] = ',';
+        uint8_t* const nccur = nearcounts + removeidx[0][i];
+        --nccur[-linewidth-1];
+        --nccur[-linewidth];
+        --nccur[-linewidth+1];
+        --nccur[-1];
+        --nccur[1];
+        --nccur[linewidth-1];
+        --nccur[linewidth];
+        --nccur[linewidth+1];
+    }
+
+    answer1 = toremove;
+    answer2 = toremove;
+
+    DEBUGLOG("removed = %" PRIu64 "\n", toremove);
+
+    ri = 1;
 
     do
     {
+        const uint64_t oldtoremove = toremove;
         toremove = 0;
 
-        const uint8_t* nc = nearcounts;
-        for (const chartype* cd = data; cd != end; ++cd, ++nc)
+        for (size_t i = 0; i < oldtoremove; ++i)
         {
-            if (*cd != '@')
+            const int16_t ridx = removeidx[(ri+1)&1][i];
+            const chartype* const cd = data + ridx;
+            const uint8_t* const cnc = nearcounts + ridx;
+
+            if (*cd != ',')
                 continue;
-            if (*nc < 4)
-                removeidx[toremove++] = cd - data;
+
+            DEBUGLOG("[%zu] ri = %d, ori = %d, ridx = %d, ch = %c\n", i, ri, (ri+1)&1, ridx, *cd);
+                
+            if (cd[-linewidth-1] == '@' && cnc[-linewidth-1] < 4)
+                removeidx[ri][toremove++] = ridx - linewidth - 1;
+            if (cd[-linewidth] == '@' && cnc[-linewidth] < 4)
+                removeidx[ri][toremove++] = ridx - linewidth;
+            if (cd[-linewidth+1] == '@' && cnc[-linewidth+1] < 4)
+                removeidx[ri][toremove++] = ridx - linewidth + 1;
+            if (cd[-1] == '@' && cnc[-1] < 4)
+                removeidx[ri][toremove++] = ridx - 1;
+            if (cd[1] == '@' && cnc[1] < 4)
+                removeidx[ri][toremove++] = ridx + 1;
+            if (cd[linewidth-1] == '@' && cnc[linewidth-1] < 4)
+                removeidx[ri][toremove++] = ridx + linewidth - 1;
+            if (cd[linewidth] == '@' && cnc[linewidth] < 4)
+                removeidx[ri][toremove++] = ridx + linewidth;
+            if (cd[linewidth+1] == '@' && cnc[linewidth+1] < 4)
+                removeidx[ri][toremove++] = ridx + linewidth + 1;
         }
 
-        DEBUGLOG("removing %" PRIu64 "\n", toremove);
-        if (answer1 == 0)
-            answer1 = toremove;
-        answer2 += toremove;
-
+        removed = 0;
         for (size_t i = 0; i < toremove; ++i)
         {
-            data[removeidx[i]] = ',';
-            uint8_t* const nccur = nearcounts + removeidx[i];
+            if (data[removeidx[ri][i]] != '@')
+            {
+                removeidx[ri][i] = -1;
+                continue;
+            }
+            ++removed;
+            data[removeidx[ri][i]] = ',';
+            DEBUGLOG("setting ridx %u\n", removeidx[ri][i]);
+            uint8_t* const nccur = nearcounts + removeidx[ri][i];
             --nccur[-linewidth-1];
             --nccur[-linewidth];
             --nccur[-linewidth+1];
@@ -86,9 +137,15 @@ int main(int argc, char** argv)
             --nccur[linewidth];
             --nccur[linewidth+1];
         }
+
+        answer2 += removed;
+        DEBUGLOG("removed %" PRIu64 "\n", removed);
+        DEBUGLOG("%.*s\n", (int)fileSize, data);
+
+        ri = (ri+1)&1;
     } while (toremove);
 
-    // DEBUGLOG("%.*s\n", (int)fileSize, data);
+    DEBUGLOG("%.*s\n", (int)fileSize, data);
 
     print_uint64(answer1);
     print_uint64(answer2);
