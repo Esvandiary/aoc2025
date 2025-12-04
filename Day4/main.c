@@ -27,17 +27,12 @@ int main(int argc, char** argv)
     int linewidth = idx;
     int width = linewidth-1;
 
+    uint32_t removeidx[4096];
     uint64_t toremove;
 
     do
     {
         toremove = 0;
-
-        for (int i = 0; i < fileSize; ++i)
-        {
-            if (data[i] & 1)
-                data[i] = ',';
-        }
 
         for (int y = 0; y < width; ++y)
         {
@@ -60,10 +55,7 @@ int main(int argc, char** argv)
                 near += AT(x+1, y+1) >> 6;
 
                 if (near < 4)
-                {
-                    AT(x,y) |= 1;
-                    ++toremove;
-                }
+                    removeidx[toremove++] = (x << 16) | y;
             }
         }
 
@@ -71,6 +63,9 @@ int main(int argc, char** argv)
         if (answer1 == 0)
             answer1 = toremove;
         answer2 += toremove;
+
+        for (size_t i = 0; i < toremove; ++i)
+            AT(removeidx[i] >> 16, removeidx[i] & 0xFFFF) = ',';
     } while (toremove);
 
     // DEBUGLOG("%.*s\n", fileSize, file.data);
