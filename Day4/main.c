@@ -30,10 +30,11 @@ int main(int argc, char** argv)
     while (data[idx++] != '\n');
     const int linewidth = idx;
 
-    int32_t removeidx[4096];
+    int16_t removeidx[4096];
     uint64_t toremove;
 
-    for (const chartype* cd = data; cd != end; ++cd)
+    uint8_t* nc = nearcounts;
+    for (const chartype* cd = data; cd != end; ++cd, ++nc)
     {
         if (*cd != '@')
             continue;
@@ -51,14 +52,14 @@ int main(int argc, char** argv)
         near += cd[linewidth] >> 6;
         near += cd[linewidth+1] >> 6;
 
-        nearcounts[cd - data] = near;
+        *nc = near;
     }
 
     do
     {
         toremove = 0;
 
-        const chartype* nc = nearcounts;
+        const uint8_t* nc = nearcounts;
         for (const chartype* cd = data; cd != end; ++cd, ++nc)
         {
             if (*cd != '@')
@@ -80,7 +81,6 @@ int main(int argc, char** argv)
             --nccur[-linewidth];
             --nccur[-linewidth+1];
             --nccur[-1];
-            nccur[0] = 0xFF;
             --nccur[1];
             --nccur[linewidth-1];
             --nccur[linewidth];
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
         }
     } while (toremove);
 
-    // DEBUGLOG("%.*s\n", fileSize, file.data);
+    // DEBUGLOG("%.*s\n", (int)fileSize, data);
 
     print_uint64(answer1);
     print_uint64(answer2);
