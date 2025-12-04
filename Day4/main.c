@@ -8,6 +8,7 @@
 #define AT(x, y) (data[((x) + (y)*linewidth)])
 
 static chartype datastore[MAXSIZE*MAXSIZE] = {0};
+static uint8_t nearcountstore[MAXSIZE*MAXSIZE] = {0};
 
 int main(int argc, char** argv)
 {
@@ -15,6 +16,8 @@ int main(int argc, char** argv)
 
     chartype* const data = datastore + MAXSIZE;
     const chartype* const end = data + fileSize;
+
+    uint8_t* const nearcounts = nearcountstore + MAXSIZE;
 
     //
     // content
@@ -25,40 +28,43 @@ int main(int argc, char** argv)
     uint64_t answer1 = 0, answer2 = 0;
 
     while (data[idx++] != '\n');
-    int linewidth = idx;
-    int width = linewidth-1;
+    const int linewidth = idx;
 
-    uint32_t removeidx[4096];
+    int32_t removeidx[4096];
     uint64_t toremove;
+
+    for (const chartype* cd = data; cd != end; ++cd)
+    {
+        if (*cd != '@')
+            continue;
+
+        uint8_t near = 0;
+
+        near += cd[-linewidth-1] >> 6;
+        near += cd[-linewidth] >> 6;
+        near += cd[-linewidth+1] >> 6;
+
+        near += cd[-1] >> 6;
+        near += cd[1] >> 6;
+
+        near += cd[linewidth-1] >> 6;
+        near += cd[linewidth] >> 6;
+        near += cd[linewidth+1] >> 6;
+
+        nearcounts[cd - data] = near;
+    }
 
     do
     {
         toremove = 0;
 
-        const chartype* cd = data;
-        while (cd != end)
+        const chartype* nc = nearcounts;
+        for (const chartype* cd = data; cd != end; ++cd, ++nc)
         {
             if (*cd != '@')
-                goto skip;
-
-            int near = 0;
-
-            near += cd[-linewidth-1] >> 6;
-            near += cd[-linewidth] >> 6;
-            near += cd[-linewidth+1] >> 6;
-
-            near += cd[-1] >> 6;
-            near += cd[1] >> 6;
-
-            near += cd[linewidth-1] >> 6;
-            near += cd[linewidth] >> 6;
-            near += cd[linewidth+1] >> 6;
-
-            if (near < 4)
+                continue;
+            if (*nc < 4)
                 removeidx[toremove++] = cd - data;
-
-        skip:
-            ++cd;
         }
 
         DEBUGLOG("removing %" PRIu64 "\n", toremove);
@@ -67,7 +73,19 @@ int main(int argc, char** argv)
         answer2 += toremove;
 
         for (size_t i = 0; i < toremove; ++i)
+        {
             data[removeidx[i]] = ',';
+            uint8_t* const nccur = nearcounts + removeidx[i];
+            --nccur[-linewidth-1];
+            --nccur[-linewidth];
+            --nccur[-linewidth+1];
+            --nccur[-1];
+            nccur[0] = 0xFF;
+            --nccur[1];
+            --nccur[linewidth-1];
+            --nccur[linewidth];
+            --nccur[linewidth+1];
+        }
     } while (toremove);
 
     // DEBUGLOG("%.*s\n", fileSize, file.data);
