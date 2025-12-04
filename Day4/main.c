@@ -1,16 +1,19 @@
 // #define ENABLE_DEBUGLOG
-#include "../common/mmap.h"
+#include "../common/basicfile.h"
 #include "../common/print.h"
 #include "../common/view.h"
 
 #define MAXSIZE 192
 
-#define AT(x, y) (file.data[((x) + (y)*linewidth)])
+#define AT(x, y) (data[((x) + (y)*linewidth)])
+
+static chartype datastore[MAXSIZE*MAXSIZE] = {0};
 
 int main(int argc, char** argv)
 {
-    mmap_file file = mmap_file_open_ro("input.txt");
-    const int fileSize = (int)(file.size);
+    const size_t fileSize = basic_file_read_inplace("input.txt", datastore + MAXSIZE, sizeof(chartype) * (sizeof(datastore) - MAXSIZE*2));
+
+    char* const data = datastore + MAXSIZE;
 
     //
     // content
@@ -20,7 +23,7 @@ int main(int argc, char** argv)
 
     uint64_t answer1 = 0, answer2 = 0;
 
-    while (file.data[idx++] != '\n');
+    while (data[idx++] != '\n');
     int linewidth = idx;
     int width = linewidth-1;
 
@@ -32,8 +35,8 @@ int main(int argc, char** argv)
 
         for (int i = 0; i < fileSize; ++i)
         {
-            if (file.data[i] & 1)
-                file.data[i] = ',';
+            if (data[i] & 1)
+                data[i] = ',';
         }
 
         for (int y = 0; y < width; ++y)
@@ -44,26 +47,17 @@ int main(int argc, char** argv)
                     continue;
 
                 int near = 0;
-                if (y > 0)
-                {
-                    if (x > 0)
-                        near += AT(x-1, y-1) >> 6;
-                    near += AT(x, y-1) >> 6;
-                    if (x+1 < width)
-                        near += AT(x+1, y-1) >> 6;
-                }
-                if (x > 0)
-                    near += AT(x-1, y) >> 6;
-                if (x+1 < width)
-                    near += AT(x+1, y) >> 6;
-                if (y+1 < width)
-                {
-                    if (x > 0)
-                        near += AT(x-1, y+1) >> 6;
-                    near += AT(x, y+1) >> 6;
-                    if (x+1 < width)
-                        near += AT(x+1, y+1) >> 6;
-                }
+
+                near += AT(x-1, y-1) >> 6;
+                near += AT(x, y-1) >> 6;
+                near += AT(x+1, y-1) >> 6;
+
+                near += AT(x-1, y) >> 6;
+                near += AT(x+1, y) >> 6;
+
+                near += AT(x-1, y+1) >> 6;
+                near += AT(x, y+1) >> 6;
+                near += AT(x+1, y+1) >> 6;
 
                 if (near < 4)
                 {
