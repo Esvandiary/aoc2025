@@ -13,7 +13,8 @@ int main(int argc, char** argv)
 {
     const size_t fileSize = basic_file_read_inplace("input.txt", datastore + MAXSIZE, sizeof(chartype) * (sizeof(datastore) - MAXSIZE*2));
 
-    char* const data = datastore + MAXSIZE;
+    chartype* const data = datastore + MAXSIZE;
+    const chartype* const end = data + fileSize;
 
     //
     // content
@@ -34,29 +35,30 @@ int main(int argc, char** argv)
     {
         toremove = 0;
 
-        for (int y = 0; y < width; ++y)
+        const chartype* cd = data;
+        while (cd != end)
         {
-            for (int x = 0; x < width; ++x)
-            {
-                if (AT(x,y) != '@')
-                    continue;
+            if (*cd != '@')
+                goto skip;
 
-                int near = 0;
+            int near = 0;
 
-                near += AT(x-1, y-1) >> 6;
-                near += AT(x, y-1) >> 6;
-                near += AT(x+1, y-1) >> 6;
+            near += cd[-linewidth-1] >> 6;
+            near += cd[-linewidth] >> 6;
+            near += cd[-linewidth+1] >> 6;
 
-                near += AT(x-1, y) >> 6;
-                near += AT(x+1, y) >> 6;
+            near += cd[-1] >> 6;
+            near += cd[1] >> 6;
 
-                near += AT(x-1, y+1) >> 6;
-                near += AT(x, y+1) >> 6;
-                near += AT(x+1, y+1) >> 6;
+            near += cd[linewidth-1] >> 6;
+            near += cd[linewidth] >> 6;
+            near += cd[linewidth+1] >> 6;
 
-                if (near < 4)
-                    removeidx[toremove++] = (x << 16) | y;
-            }
+            if (near < 4)
+                removeidx[toremove++] = cd - data;
+
+        skip:
+            ++cd;
         }
 
         DEBUGLOG("removing %" PRIu64 "\n", toremove);
@@ -65,7 +67,7 @@ int main(int argc, char** argv)
         answer2 += toremove;
 
         for (size_t i = 0; i < toremove; ++i)
-            AT(removeidx[i] >> 16, removeidx[i] & 0xFFFF) = ',';
+            data[removeidx[i]] = ',';
     } while (toremove);
 
     // DEBUGLOG("%.*s\n", fileSize, file.data);
