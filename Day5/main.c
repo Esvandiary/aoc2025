@@ -110,9 +110,11 @@ int main(int argc, char** argv)
             {
                 DEBUGLOG("removing superceded range %" PRId64 " - %" PRId64 "\n",
                     ranges[i][0], ranges[i][1]);
-                ranges[i][0] = -1;
-                ranges[i][1] = -2;
-                goto nexti;
+                ranges[i][0] = ranges[j][0];
+                ranges[i][1] = ranges[j][1];
+                ranges[j][0] = -1;
+                ranges[j][1] = -2;
+                j = i; // go again
             }
             else if (ranges[j][0] >= ranges[i][0] && ranges[j][0] <= ranges[i][1])
             {
@@ -136,19 +138,21 @@ int main(int argc, char** argv)
             {
                 DEBUGLOG("late consolidating range %" PRId64 " - %" PRId64 " to %" PRId64 " - %" PRId64 "\n",
                     ranges[j][0], ranges[j][1], ranges[j][0], MAX(ranges[j][1], ranges[i][1]));
-                ranges[j][1] = MAX(ranges[j][1], ranges[i][1]);
-                ranges[i][0] = -1;
-                ranges[i][1] = -2;
-                goto nexti;
+                ranges[i][0] = ranges[j][0];
+                ranges[i][1] = MAX(ranges[j][1], ranges[i][1]);
+                ranges[j][0] = -1;
+                ranges[j][1] = -2;
+                j = i; // go again
             }
             else if (ranges[i][1] >= ranges[j][0] && ranges[i][1] <= ranges[j][1])
             {
                 DEBUGLOG("late consolidating range %" PRId64 " - %" PRId64 " to %" PRId64 " - %" PRId64 "\n",
                     ranges[j][0], ranges[j][1], MIN(ranges[j][0], ranges[i][0]), ranges[j][1]);
-                ranges[j][0] = MIN(ranges[j][0], ranges[i][0]);
-                ranges[i][0] = -1;
-                ranges[i][1] = -2;
-                goto nexti;
+                ranges[i][0] = MIN(ranges[j][0], ranges[i][0]);
+                ranges[i][1] = ranges[j][1];
+                ranges[j][0] = -1;
+                ranges[j][1] = -2;
+                j = i; // go again
             }
         }
 
